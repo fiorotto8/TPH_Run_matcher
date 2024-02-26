@@ -1,9 +1,8 @@
-import ROOT
-import uproot
 import numpy as np
 import pandas as pd
 import csv
 from datetime import datetime, timedelta
+import argparse
 
 def find_nearest_dates(list1, list2):
     """
@@ -20,8 +19,14 @@ def find_nearest_dates(list1, list2):
         nearest_dates.append(nearest_date)
     return nearest_dates
 
+parser = argparse.ArgumentParser(prog='TPHmatcher.py',description='Matches the date from Runlog with the TPH from Arduino',epilog='Text at the bottom of help')
+parser.add_argument('-r','--runlog',help='Path of the Runlog file', action='store', type=str,default='./Runlog_Feb2024.csv')
+parser.add_argument('-a','--arduino',help='Path of the arduino file', action='store', type=str,default="./TPH_log_Feb2024.csv")
+parser.add_argument('-o','--output',help='Path of the output file', action='store', type=str,default="../Feb24Out.csv")
+args = parser.parse_args()
+
 # Update file path to the newly uploaded file
-file_path = './Runlog_Feb2024.csv'
+file_path = args.runlog
 
 # Reset lists to store the extracted data
 runs = []
@@ -39,7 +44,7 @@ with open(file_path, 'r') as file:
 #print(timestamps_runlog)
 
 cols=["Time","Temperature","Pressure","Humidity","VOC"]
-df_tph=pd.read_csv("./TPH_log_Feb2024.csv", header=None, names=cols,sep=";")
+df_tph=pd.read_csv(args.arduino, header=None, names=cols,sep=";")
 
 # Convert the 'Time' column to datetime objects for comparison
 df_tph['Time'] = pd.to_datetime(df_tph['Time'], format='%Y-%m-%d_%H:%M:%S.%f')
@@ -70,4 +75,6 @@ if len(nearest_rows) == len(runs):
     nearest_rows['Run'] = runs
 else:
     print("The lengths do not match. Please check your data.")
-print(nearest_rows)
+
+# Save the DataFrame to a CSV file
+nearest_rows.to_csv(args.output, index=False)
