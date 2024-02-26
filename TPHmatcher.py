@@ -22,7 +22,7 @@ def find_nearest_dates(list1, list2):
 parser = argparse.ArgumentParser(prog='TPHmatcher.py',description='Matches the date from Runlog with the TPH from Arduino',epilog='Text at the bottom of help')
 parser.add_argument('-r','--runlog',help='Path of the Runlog file', action='store', type=str,default='./Runlog_Feb2024.csv')
 parser.add_argument('-a','--arduino',help='Path of the arduino file', action='store', type=str,default="./TPH_log_Feb2024.csv")
-parser.add_argument('-o','--output',help='Path of the output file', action='store', type=str,default="../Feb24Out.csv")
+parser.add_argument('-o','--output',help='Path of the output file', action='store', type=str,default="../Stabilitytest/Feb24Out.csv")
 args = parser.parse_args()
 
 # Update file path to the newly uploaded file
@@ -73,8 +73,13 @@ nearest_rows.reset_index(drop=True, inplace=True)
 # Ensure the length of the 'runs' list matches the number of rows in 'nearest_rows' DataFrame
 if len(nearest_rows) == len(runs):
     nearest_rows['Run'] = runs
+    # Reordering columns to make 'Run' the first column
+    cols = ['Run'] + [col for col in nearest_rows.columns if col != 'Run']
+    nearest_rows = nearest_rows[cols]
 else:
     print("The lengths do not match. Please check your data.")
+
+
 
 # Save the DataFrame to a CSV file
 nearest_rows.to_csv(args.output, index=False)
